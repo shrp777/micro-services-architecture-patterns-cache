@@ -31,7 +31,7 @@ export class CreateOrder {
           message: `Product ${item.productId} not found in catalog`,
         });
       }
-      const { data: product } = await res.json<{ data: CatalogProduct }>();
+      const { data: product } = (await res.json()) as { data: CatalogProduct };
       if (Number(product.price) !== Number(item.price)) {
         throw new HTTPException(422, {
           message: `Price mismatch for product ${item.productId}: expected ${product.price}, got ${item.price}`,

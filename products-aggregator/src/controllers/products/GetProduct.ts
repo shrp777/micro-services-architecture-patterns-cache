@@ -43,10 +43,10 @@ export class GetProduct {
       throw new HTTPException(502, { message: "Failed to fetch product from catalog" });
     }
 
-    const { data: product } = await catalogRes.json<{ data: Product }>();
+    const { data: product } = (await catalogRes.json()) as { data: Product };
     let quantity: number | null = null;
     if (stockRes.ok) {
-      const { data: stock } = await stockRes.json<{ data: Stock }>();
+      const { data: stock } = (await stockRes.json()) as { data: Stock };
       quantity = stock.quantity;
     }
 
