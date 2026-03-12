@@ -1,0 +1,16 @@
+meta {
+  name: Get Stock Unauthorized
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{stockHost}}/stocks
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+  res.body.success: eq false
+}

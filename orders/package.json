@@ -1,0 +1,19 @@
+{
+  "name": "orders",
+  "version": "1.0.0",
+  "author": "Alexandre Leroux (<alex@shrp.dev>)",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/index.ts",
+    "seed": "bun run src/config/seed.ts"
+  },
+  "dependencies": {
+    "hono": "^4.12.3",
+    "typeorm": "^0.3.20",
+    "reflect-metadata": "^0.2.2",
+    "mysql2": "^3.12.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

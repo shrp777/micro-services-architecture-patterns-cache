@@ -1,0 +1,21 @@
+meta {
+  name: List Stocks
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{stockHost}}/stocks
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data: isArray
+}

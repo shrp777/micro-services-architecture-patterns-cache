@@ -1,0 +1,32 @@
+meta {
+  name: Upsert Stock
+  type: http
+  seq: 3
+}
+
+put {
+  url: {{stockHost}}/stocks/:productId
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}
+
+params:path {
+  productId: {{productId}}
+}
+
+body:json {
+  {
+    "quantity": 10
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.productId: isDefined
+  res.body.data.quantity: eq 10
+}

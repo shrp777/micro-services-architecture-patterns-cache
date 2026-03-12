@@ -1,0 +1,27 @@
+meta {
+  name: Update Product Not Found
+  type: http
+  seq: 2
+}
+
+put {
+  url: {{host}}/catalog/products/:productId
+  body: json
+  auth: none
+}
+
+params:path {
+  productId: 00000000-0000-0000-0000-000000000000
+}
+
+body:json {
+  {
+    "price": 9.99
+  }
+}
+
+assert {
+  res.status: eq 404
+  res.body.success: eq false
+  res.body.error: isDefined
+}

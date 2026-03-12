@@ -1,0 +1,190 @@
+name: "xyz"
+
+services:
+  gateway:
+    container_name: gateway
+    networks:
+      - xyz
+    build: ./gateway
+    volumes:
+      - ./gateway:/app
+    ports:
+      - "3000:3000"
+    env_file: ./gateway/.env
+    depends_on:
+      - orders
+      - catalog
+      - order-processor
+      - products-aggregator
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  redis:
+    container_name: redis
+    networks:
+      - xyz
+    image: redis:alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  catalog:
+    container_name: catalog
+    networks:
+      - xyz
+    build: ./catalog
+    env_file: ./catalog/.env
+    volumes:
+      - ./catalog:/app
+    depends_on:
+      catalog-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  catalog-db:
+    container_name: catalog-db
+    networks:
+      - xyz
+    image: mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: catalog
+    volumes:
+      - catalog-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  order-processor:
+    container_name: order-processor
+    networks:
+      - xyz
+    build: ./order-processor
+    env_file: ./order-processor/.env
+    volumes:
+      - ./order-processor:/app
+    depends_on:
+      - catalog
+      - orders
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  orders:
+    container_name: orders
+    networks:
+      - xyz
+    build: ./orders
+    env_file: ./orders/.env
+    volumes:
+      - ./orders:/app
+    depends_on:
+      orders-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  orders-db:
+    container_name: orders-db
+    networks:
+      - xyz
+    image: mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: orders
+    volumes:
+      - orders-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  products-aggregator:
+    container_name: products-aggregator
+    networks:
+      - xyz
+    build: ./products-aggregator
+    env_file: ./products-aggregator/.env
+    volumes:
+      - ./products-aggregator:/app
+    depends_on:
+      catalog:
+        condition: service_healthy
+      stock:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  stock:
+    container_name: stock
+    networks:
+      - xyz
+    build: ./stock
+    env_file: ./stock/.env
+    volumes:
+      - ./stock:/app
+    depends_on:
+      stock-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  stock-db:
+    container_name: stock-db
+    networks:
+      - xyz
+    image: mariadb
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: stock
+    volumes:
+      - stock-db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  catalog-db-data:
+  orders-db-data:
+  stock-db-data:
+
+networks:
+  xyz:
+    driver: bridge

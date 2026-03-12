@@ -1,0 +1,26 @@
+meta {
+  name: Get Stock
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{stockHost}}/stocks/:productId
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{bearerToken}}
+}
+
+params:path {
+  productId: {{productId}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.success: eq true
+  res.body.data.productId: isDefined
+  res.body.data.quantity: isDefined
+}

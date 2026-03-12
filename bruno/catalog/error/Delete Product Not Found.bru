@@ -1,0 +1,21 @@
+meta {
+  name: Delete Product Not Found
+  type: http
+  seq: 3
+}
+
+delete {
+  url: {{host}}/catalog/products/:productId
+  body: none
+  auth: none
+}
+
+params:path {
+  productId: 00000000-0000-0000-0000-000000000000
+}
+
+assert {
+  res.status: eq 404
+  res.body.success: eq false
+  res.body.error: isDefined
+}

@@ -1,0 +1,28 @@
+meta {
+  name: Create Order Error
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{host}}/orders/ref
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "items": [
+      {
+        "productId": "{{productId}}",
+        "quantity": 1,
+        "price": 1000
+      }
+    ]
+  }
+}
+
+assert {
+  res.status: eq 422
+  res.body.success: eq false
+}

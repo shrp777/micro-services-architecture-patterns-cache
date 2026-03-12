@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "xyz-redis-cache",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
